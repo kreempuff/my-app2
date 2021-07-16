@@ -4,7 +4,7 @@ import {ChangeEvent, useEffect, useState} from "react";
 import styles from '../styles/Home.module.css'
 import {
     Box,
-    Button,
+    Button, ButtonGroup,
     Container,
     Grid, Input,
     InputLabel,
@@ -56,8 +56,10 @@ const TaxForm: React.FC<{
             additionalCondition: true,
             component: (
                 <TaxStepComponent>
-                    <InputLabel id={"income-label"}>How much do you estimate you&quot;ll make in income in 2021?</InputLabel>
-                    <TextField onChange={(e) => setIncome(parseInt(e.target.value, 10))} type="number" value={"$" + income}/>
+                    <InputLabel id={"income-label"}>How much do you estimate you&quot;ll make in income in
+                        2021?</InputLabel>
+                    <TextField aria-valuemin={0} onChange={(e) => setIncome(parseInt(e.target.value, 10))} type="number"
+                               value={"$" + income}/>
                 </TaxStepComponent>
             )
         },
@@ -68,7 +70,8 @@ const TaxForm: React.FC<{
                 <TaxStepComponent>
                     <InputLabel id={"filing-label"}>How will you file your taxes this year?</InputLabel>
                     <br/>
-                    <Select name="filing" labelId={"filing-label"} onChange={(e) => setMarriedState(e.target.value as MarriedState)} id="filing"
+                    <Select name="filing" labelId={"filing-label"}
+                            onChange={(e) => setMarriedState(e.target.value as MarriedState)} id="filing"
                             value={marriedState}>
                         <MenuItem value={MarriedState.Single}>{MarriedState.Single}</MenuItem>
                         <MenuItem value={MarriedState.MarriedJoint}>{MarriedState.MarriedJoint}</MenuItem>
@@ -83,8 +86,8 @@ const TaxForm: React.FC<{
             additionalCondition: marriedState == MarriedState.MarriedJoint || marriedState == MarriedState.MarriedSeparately,
             component: (
                 <TaxStepComponent>
-                    <p>Number of children</p>
-                    <input min={"0"} type="number" value={numChildren}
+                    <InputLabel>Number of children?</InputLabel>
+                    <TextField aria-valuemin={0}  type="number" value={numChildren}
                            onChange={(e) => setNumChildren(parseInt(e.target.value) || 0)}/>
                 </TaxStepComponent>
             )
@@ -94,12 +97,12 @@ const TaxForm: React.FC<{
             additionalCondition: true,
             component: (
                 <TaxStepComponent>
-                    <p>What state do you live in?</p>
-                    <select onChange={(e) => setUsState(e.target.value)} name="state" id="state" value={usState}>
+                    <InputLabel id={"state-label"}>What state do you live in?</InputLabel>
+                    <Select labelId={"state-label"} onChange={(e) => setUsState(e.target.value)} name="state" id="state" value={usState}>
                         {props.data.map(d => (
-                            <option key={d.abbreviation} value={d.name}>{d.name}</option>
+                            <MenuItem key={d.abbreviation} value={d.name}>{d.name}</MenuItem>
                         ))}
-                    </select>
+                    </Select>
                 </TaxStepComponent>
             )
         }
@@ -128,6 +131,7 @@ const TaxForm: React.FC<{
         }
         return setActiveStep(idx)
     }
+
     function lookupStatetaxRate(stateInput: string): number {
         const state = props.data.find((d) => d.name === stateInput)
         if (!state) {
@@ -138,26 +142,27 @@ const TaxForm: React.FC<{
 
     return (
         <div className={styles.container}>
-            <Stepper activeStep={activeStep}>
-                {steps.map((s) => (<Step active={s.additionalCondition} key={s.label}>
-                    <StepLabel>{s.label}</StepLabel>
-                </Step>))}
-            </Stepper>
-
-            {activeStep === steps.length ? null : steps[activeStep].component}
-
 
             <Grid container>
-                <Grid item alignContent={"center"} xs={12} sm={6}>
-                    <Button disabled={activeStep === 0} onClick={handleBack}>Back</Button>
+                <Grid item xs={12}>
+                    <Stepper activeStep={activeStep}>
+                        {steps.map((s) => (<Step active={s.additionalCondition} key={s.label}>
+                            <StepLabel>{s.label}</StepLabel>
+                        </Step>))}
+                    </Stepper>
                 </Grid>
 
-                <Grid alignContent={"center"} item xs={12} sm={6}>
-                    <Button disabled={activeStep === steps.length} onClick={handleForward}>Continue</Button>
+                <Grid item container justifyContent={"center"} xs={12}>
+                    {activeStep === steps.length ? null : steps[activeStep].component}
                 </Grid>
-
-
-                <Grid item sm={12}>
+                <Grid container justifyContent={"center"} item sm={12}>
+                    <ButtonGroup>
+                        <Button disabled={activeStep === 0} onClick={handleBack}>Back</Button>
+                        <Button disabled={activeStep === steps.length} onClick={handleForward}>Continue</Button>
+                    </ButtonGroup>
+                </Grid>
+                <br/>
+                <Grid item container justifyContent={"center"} sm={12}>
                     <Typography align={"center"} variant={"h5"}>
                         Tax burden
                     </Typography>
